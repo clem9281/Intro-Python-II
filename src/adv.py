@@ -33,18 +33,18 @@ room["narrow"].n_to = room["treasure"]
 room["treasure"].s_to = room["narrow"]
 
 # add items to rooms
-room["outside"].addItems(
-    [{"name": "Sword", "description": "It's dangerous to go alone: take this!"}]
+room["outside"].addItem(
+    {"name": "sword", "description": "It's dangerous to go alone: take this!"}
 )
 
-room["foyer"].addItems(
-    [
-        {"name": "Potion", "description": "Restores a minor amount of health"},
-        {"name": "Tent", "description": "Allows you to camp in certain areas"},
-    ]
+room["foyer"].addItem(
+    {"name": "Potion", "description": "Restores a minor amount of health"}
 )
-room["overlook"].addItems([{"name": "Potion", "description": "Restores a minor amount of health"}, {"name": "Tent", "description": "Allows you to camp in certain areas"}])
-room["narrow"].addItems([{"name": "Bow", "description": "ranged weapon"}])
+room["foyer"].addItem(
+    {"name": "Tent", "description": "Allows you to camp in certain areas"}
+)
+room["overlook"].addItem({"name": "fossil", "description": "a rare item"})
+room["narrow"].addItem({"name": "bow", "description": "ranged weapon"})
 #
 # Main
 #
@@ -65,26 +65,50 @@ player1 = Player(room["outside"], "player1")
 
 def play_game(player):
     while True:
-        print(player.room.name)
+        print(f"\n{player.room.name}")
         print(player.room.description)
         print(
             f"Your investigation of the room shows you it contains a: {player.room.printItems()}"
         )
-        player_move = (input("What would you like to do? Go N S E W: ")).lower()
-        if player_move == "q":
-            print("End Game")
-            break
-        # If the room has that directional attribute, get it and set it to the next room, then set the player's room to next_room, but if that attribute hasn't been assigned yet print the prompt to try a different direction'
-        elif hasattr(player.room, f"{player_move}_to"):
-            next_room = getattr(player.room, f"{player_move}_to")
-            # getattr might return none above, check if it returned a proper room
-            if next_room:
-                setattr(player, "room", next_room)
+        print(f"Your current inventory is: {player.printItems()}")
+        player_move = (
+            input(
+                "What would you like to do? Go N S E W, or take or drop items, or press q to quit: "
+            )
+        ).lower()
+        player_move_arr = player_move.split(" ")
+        if len(player_move_arr) == 1:
+            if player_move == "q":
+                print("End Game")
+                break
+            # If the room has that directional attribute, get it and set it to the next room, then set the player's room to next_room, but if that attribute hasn't been assigned yet print the prompt to try a different direction'
+            elif hasattr(player.room, f"{player_move}_to"):
+                next_room = getattr(player.room, f"{player_move}_to")
+                # getattr might return none above, check if it returned a proper room
+                if next_room:
+                    setattr(player, "room", next_room)
+                else:
+                    print("There is nothing in that direction, try again!")
+            # if nothing above has fired then the user gave us something other than n s e w so tell them their input is invalid
             else:
-                print("There is nothing in that direction, try again!")
-        # if nothing above has fired then the user gave us something other than n s e w so tell them their input is invalid
+                print(
+                    "Invalid input, please enter either n s e or w, or q to quit, or take or drop items"
+                )
+        elif len(player_move_arr) == 2:
+            if player_move_arr[0] == "take":
+                for item in player.room.inventory:
+                    if item.name == player_move_arr[1]:
+                        player.room.dropItem(item)
+                        player.addItem(item)
+            elif player_move_arr[0] == "drop":
+                for item in player.inventory:
+                    if item.name == player_move_arr[1]:
+                        player.dropItem(item)
+                        player.room.addItem(item)
         else:
-            print("Invalid input, please enter either n s e or w")
+            print(
+                "Invalid operation: please enter either n s e or w, or q to quit, or take or drop items"
+            )
 
 
 play_game(player1)

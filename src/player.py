@@ -15,16 +15,21 @@ class Player:
         itemString = ""
         for item in self.inventory:
             itemString += f"\n{item.name} : {item.description}"
+        if itemString == "":
+            return "No items"
         return itemString
 
-    def addItems(self, items):
+    def addItem(self, item):
+        if isinstance(item, Item):
+            self.inventory.append(item)
+        else:
+            self.inventory.append(Item(item["name"], item["description"]))
 
-        for element in items:
-            self.inventory.append(Item(element["name"], element["description"]))
+    def dropItem(self, item):
+        self.inventory.remove(item)
 
     def __str__(self):
         return f"Player: {self.room}"
 
     def __repr__(self):
         return f"Player({repr(self.room)})"
-
